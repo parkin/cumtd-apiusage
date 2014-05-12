@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>title</title>
+    <link rel="stylesheet" href="static/nv.d3.css" type="text/css">
+    <script src="static/jquery-2.1.1.min.js"></script>
+    <script src="static/d3.min.js"></script>
+    <script src="static/nv.d3.min.js"></script>
+  </head>
+  <body>
+    <div id="callsChart">
+      <svg style='height:600px'/>
+    </div>
+    <div id="versionCallsChart">
+      <svg style='height:600px'/>
+    </div>
+
+    <script type="text/javascript">
+// plotting function.
+function plotCalls(data, d3select) {
+  var format = d3.time.format("%Y-%m-%d");
+  nv.addGraph(function() {
+    var chart = nv.models.stackedAreaChart()
+                  .x(function(d) { return format.parse(d[0]) })
+                  .y(function(d) { return d[1] })
+                  .clipEdge(true)
+                  .useInteractiveGuideline(true)
+                  ;
+
+    chart.xAxis
+       .showMaxMin(false)
+         .tickFormat(function(d) { return d3.time.format('%x')(new Date(d)) });
+
+    chart.yAxis
+        .tickFormat(d3.format(',.d'));
+
+    d3.select(d3select)
+      .datum(data)
+        .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+}
+
+function parseCalls(json){
+    var days = json.days;
+    var count = [];
+    for(var i =0; i < days.length; i ++) {
+      count.push(
+          [days[i].date, days[i].calls]
+      );
+    }
+
+    var data = [
+        {
+            key: "Calls",
+            values: count
+        }
+    ];
+    plotCalls(data, '#callsChart svg');
+}
+
+function findVersionCalls(versions, number){
+  for (var i = 0; i < versions.length; i++) {
+    if (new String(number).valueOf() == new String(versions[i].number).valueOf()) {
+      return versions[i].calls;
+    }
+  }
+  return 0;
+}
+
+function parseVersionCalls(json){
+  // loop through to get the versions
+  var days = json.days;
+  var versionNumbers = [];
+  for(var i = 0; i < days.length; i++) {
+    var dversions = days[i].versions;
+    for(var j = 0; j < dversions.length; j++) {
+      if ($.inArray(dversions[j].number, versionNumbers) < 0) {
+        versionNumbers.push(dversions[j].number);
+      }
+    }
+  }
+  versionNumbers.sort();
+
+  // initialize the data object
+  data = [];
+
+  for(var i = 0; i < versionNumbers.length; i++) {
+    data.push({key: versionNumbers[i], values: []});
+  }
+
+  // loop through again to fill the data object
+  for (var i = 0; i < days.length; i++) {
+    var dversions = days[i].versions;
+    for(var j = 0; j < dversions.length; j++) {
+      data[j].values.push([days[i].date, findVersionCalls(dversions, dversions[j].number)]);
+    }
+  }
+
+  return data;
+}
+
+$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(data) {
+  parseCalls(data);
+  var versionCalls = parseVersionCalls(data);
+  plotCalls(versionCalls, '#versionCallsChart svg');
+});
+    </script>
+  </body>
+</html>
