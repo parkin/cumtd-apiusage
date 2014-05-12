@@ -15,6 +15,9 @@
     <div id="versionCallsChart">
       <svg style='height:600px'/>
     </div>
+    <div id="methodCallsChart">
+      <svg style='height:600px'/>
+    </div>
 
     <script type="text/javascript">
 // plotting function.
@@ -114,11 +117,62 @@ function parseVersionCalls(json){
   return data;
 }
 
-$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(data) {
-  var totalCalls = parseCalls(data);
+function parseMethodCalls(json) {
+  // initialize the data object
+  data = [];
+
+  // loop through to get the versions
+  var days = json.days;
+  var methodNames = [];
+  var emptyData = [];
+  for(var i = 0; i < days.length; i++) {
+    var dversions = days[i].versions;
+    for(var j = 0; j < dversions.length; j++) {
+      var dmethods = dversions[j].methods;
+      var indexesModified = [];
+      for(var k = 0; k < dmethods.length; k++){
+        var index = $.inArray(dmethods[k].name, methodNames);
+        if (index < 0) {
+          methodNames.push(dmethods[k].name);
+          var newData = {key: dmethods[k].name, values: emptyData.slice(0)}
+          data.push(newData);
+          // set index to the array length -1, now that we have appended.
+          index = methodNames.length - 1;
+        }
+        // if we've already added this date, add to the calls number.
+        var values = data[index].values
+        if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() == new String(days[i].date).valueOf()){
+          values[values.length - 1][1] += dmethods[k].calls;
+        } else {
+          values.push([days[i].date, dmethods[k].calls]);
+        }
+      }
+      // go through all the methods that weren't called on this day and add 0.
+      for(var m = 0; m < data.length; m++) {
+        var values = data[m].values;
+        if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() != new String(days[i].date).valueOf()){
+          values.push([days[i].date, 0]);
+        }
+      }
+    }
+    // append to the empty data.
+    emptyData.push([days[i].date, 0]);
+  }
+  console.log(data);
+
+  // sort by method name.
+  //data.sort(sort_by('key', true, function(a){return a.toUpperCase()}));
+
+  return data;
+}
+
+$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(json) {
+  var totalCalls = parseCalls(json);
   plotCalls(totalCalls, '#callsChart svg');
-  var versionCalls = parseVersionCalls(data);
+  var versionCalls = parseVersionCalls(json);
   plotCalls(versionCalls, '#versionCallsChart svg');
+  var methodCalls = parseMethodCalls(json);
+  plotCalls(methodCalls, '#methodCallsChart svg');
 });
     </script>
   </body>
