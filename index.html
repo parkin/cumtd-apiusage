@@ -3,26 +3,62 @@
   <head>
     <meta charset="utf-8">
     <title>title</title>
+
     <link rel="stylesheet" href="static/nv.d3.css" type="text/css">
+    <link rel="stylesheet" href="foundation/css/normalize.css">
+    <link rel="stylesheet" href="foundation/css/foundation.css">
+    <link rel="stylesheet" href="static/mtd-apiusage.css">
+
     <script src="static/jquery-2.1.1.min.js"></script>
     <script src="static/d3.min.js"></script>
     <script src="static/nv.d3.min.js"></script>
+    <script src="foundation/js/vendor/modernizr.js"></script>
   </head>
   <body>
-    <div id="callsChart">
-      <svg style='height:600px'/>
-    </div>
-    <div id="versionCallsChart">
-      <svg style='height:600px'/>
-    </div>
-    <div id="methodCallsChart">
-      <svg style='height:600px'/>
-    </div>
-    <div id="pieChart">
-      <svg style='height:600px'/>
+    <div class="row">
+      <div class="small-12 columns">
+        <ul class="button-group">
+          <li><button id="totalButton" class="button">Total</button></li>
+          <li><button id="versionButton" href="#" class="button">Version</button></li>
+          <li><button id="methodButton" href="#" class="button">Method</button></li>
+        </ul>
+      </div>
     </div>
 
+    <div class="row fullWidth">
+      <div class="small-8 columns" id="methodCallsChart">
+        <svg style='min-height:300px'/>
+      </div>
+      <div class="small-4 columns" id="pieChart">
+        <svg style='min-height:300px'/>
+      </div>
+    </div>
+
+    <script src="foundation/js/vendor/jquery.js"></script>
+    <script src="foundation/js/foundation.min.js"></script>
+    <script>
+// initialize document stuff
+$(document).foundation();
+
+$(document).on('click', '#totalButton', function() {
+  var totalCalls = parseCalls(json);
+  plotCalls(totalCalls, '#methodCallsChart svg');
+  plotPie(totalCalls, '#pieChart svg');
+  });
+$(document).on('click', '#versionButton', function() {
+  var versionCalls = parseVersionCalls(json);
+  plotCalls(versionCalls, '#methodCallsChart svg');
+  plotPie(versionCalls, '#pieChart svg');
+  });
+$(document).on('click', '#methodButton', function() {
+  var methodCalls = parseMethodCalls(json);
+  plotCalls(methodCalls, '#methodCallsChart svg');
+  plotPie(methodCalls, '#pieChart svg');
+  });
+    </script>
+
     <script type="text/javascript">
+var json = [];
 // plotting function.
 function plotCalls(data, d3select) {
   var format = d3.time.format("%Y-%m-%d");
@@ -196,14 +232,9 @@ function parseMethodCalls(json) {
   return data;
 }
 
-$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(json) {
-  var totalCalls = parseCalls(json);
-  plotCalls(totalCalls, '#callsChart svg');
-  var versionCalls = parseVersionCalls(json);
-  plotCalls(versionCalls, '#versionCallsChart svg');
-  var methodCalls = parseMethodCalls(json);
-  plotCalls(methodCalls, '#methodCallsChart svg');
-  plotPie(methodCalls, '#pieChart svg');
+$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(jsonRet) {
+  json = jsonRet;
+  $('#totalButton').trigger('click');
 });
     </script>
   </body>
