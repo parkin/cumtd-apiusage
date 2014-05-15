@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>CUMTD Api Usage</title>
 
@@ -13,247 +13,357 @@
     <script src="static/d3.min.js"></script>
     <script src="static/nv.d3.min.js"></script>
     <script src="foundation/js/vendor/modernizr.js"></script>
-  </head>
+
+    <link rel="stylesheet" href="static/foundation-datepicker.css" type="text/css">
+    <script src="static/foundation-datepicker.js"></script>
+</head>
 
 
-  <body>
-    <div class="row" panel>
-      <div class="small-12 columns">
-        <label>Insert JSON
-          <textarea placeholder="Paste JSON here." style="min-height:200px"></textarea>
-        </label>
-      </div>
+<body>
+<div class="row panel">
+
+    <div class="large-4 columns">
+        <h3>Use MTD Api</h3>
+        <a href="https://developer.cumtd.com/documentation/v2.2/method/GetApiUsage" target="_blank">documentation</a>
     </div>
+    <div class="large-8 columns">
+        <form id="apiform" data-abide action="javascript:void(0);">
+            <div class="row">
+                <div class="large-12 columns">
+                    <label>API Key
+                        <small>required</small>
+                        <input type="text" value="" name="key" placeholder="a12b34c5678901b2def3ghi4j56k7l8m" required>
+                    </label>
+                    <small class="error">A valid CUMTD API key is required. (<a
+                            href="https://developer.cumtd.com/documentation/v2.2/Requests" target="_blank">info</a>)
+                    </small>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-6 columns">
+                    <label>Method
+                        <input type="text" value="" name="method" placeholder="GetDeparturesByStop">
+                    </label>
+                </div>
+                <div class="large-6 columns">
+                    <label>Version
+                        <input type="text" value="" name="version" placeholder="2.2">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-6 columns">
+                    <label>Start Date
+                        <input type="text" name="start_date" placeholder="2014-05-04" id="startDate">
+                    </label>
+                </div>
+                <div class="large-6 columns">
+                    <label>End Date
+                        <input type="text" name="end_date" placeholder="2014-05-05" id="endDate">
+                    </label>
+                </div>
 
+            </div>
+            <div class="row">
+                <div class="large-12 columns">
+                    <button type="submit">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form>
     <div class="row">
-      <div class="small-12 columns">
+        <div class="small-12 columns">
+            <label>JSON
+                <textarea placeholder="Paste JSON here." style="min-height:200px"></textarea>
+            </label>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="small-12 columns">
         <ul class="button-group">
-          <li><button id="submit" class="button">Submit</button></li>
+            <li>
+                <button id="submit" class="button">Submit</button>
+            </li>
         </ul>
-      </div>
     </div>
+</div>
 
-    <div class="row">
-      <div class="small-12 columns">
+<div class="row">
+    <div class="small-12 columns">
         <ul class="button-group">
-          <li><button id="totalButton" class="button">Total</button></li>
-          <li><button id="versionButton" href="#" class="button">Version</button></li>
-          <li><button id="methodButton" href="#" class="button">Method</button></li>
+            <li>
+                <button id="totalButton" class="button">Total</button>
+            </li>
+            <li>
+                <button id="versionButton" class="button">Version</button>
+            </li>
+            <li>
+                <button id="methodButton" class="button">Method</button>
+            </li>
         </ul>
-      </div>
     </div>
+</div>
 
-    <div class="row fullWidth">
-      <div class="small-8 columns" id="methodCallsChart">
+<div class="row fullWidth">
+    <div class="small-8 columns" id="regChart">
         <svg style='min-height:300px'/>
-      </div>
-      <div class="small-4 columns" id="pieChart">
-        <svg style='min-height:300px'/>
-      </div>
     </div>
+    <div class="small-4 columns" id="pieChart">
+        <svg style='min-height:300px'/>
+    </div>
+</div>
 
-    <script src="foundation/js/vendor/jquery.js"></script>
-    <script src="foundation/js/foundation.min.js"></script>
-    <script>
-// initialize document stuff
-$(document).foundation();
+<script src="foundation/js/vendor/jquery.js"></script>
+<script src="foundation/js/foundation.min.js"></script>
+<script>
+    mtd_json = []
 
-$(document).on('click', '#totalButton', function() {
-  var totalCalls = parseCalls(json);
-  plotCalls(totalCalls, '#methodCallsChart svg');
-  plotPie(totalCalls, '#pieChart svg');
-  });
-$(document).on('click', '#versionButton', function() {
-  var versionCalls = parseVersionCalls(json);
-  plotCalls(versionCalls, '#methodCallsChart svg');
-  plotPie(versionCalls, '#pieChart svg');
-  });
-$(document).on('click', '#methodButton', function() {
-  var methodCalls = parseMethodCalls(json);
-  plotCalls(methodCalls, '#methodCallsChart svg');
-  plotPie(methodCalls, '#pieChart svg');
-  });
-    </script>
+    // initialize document stuff
+    $(document).foundation();
 
-    <script type="text/javascript">
-var json = [];
-// plotting function.
-function plotCalls(data, d3select) {
-  var format = d3.time.format("%Y-%m-%d");
-  nv.addGraph(function() {
-    var chart = nv.models.stackedAreaChart()
-                  .x(function(d) { return format.parse(d[0]) })
-                  .y(function(d) { return d[1] })
-                  .clipEdge(true)
-                  .useInteractiveGuideline(true)
-                  ;
+    $(document).on('click', '#totalButton', function () {
+        var totalCalls = parseCalls(mtd_json);
+        plotCalls(totalCalls);
+        plotPie(totalCalls, '#pieChart svg');
+    });
+    $(document).on('click', '#versionButton', function () {
+        var versionCalls = parseVersionCalls(mtd_json);
+        plotCalls(versionCalls);
+        plotPie(versionCalls, '#pieChart svg');
+    });
+    $(document).on('click', '#methodButton', function () {
+        var methodCalls = parseMethodCalls(mtd_json);
+        plotCalls(methodCalls);
+        plotPie(methodCalls, '#pieChart svg');
+    });
+    $('#apiform')
+            .on('invalid', function () {
+                var invalid_fields = $(this).find('[data-invalid]');
+                console.log(invalid_fields);
+            })
+            .on('valid',function (d) {
+            }).on('submit', function (event) {
+                // need callback=?. JSONP
+                var url = 'https://developer.cumtd.com/api/v2.2/json/GetApiUsage?callback=?&' + $(this).serialize();
+                $.getJSON(url, function (data) {
+                    //data is the JSON string
+                    if(data.status.code != 200){
+                        console.error(data);
+                    } else {
+                        console.log(data);
+                        mtd_json = data;
+                        var data = parseCalls(mtd_json);
+                        plotCalls(data);
+                    }
+                });
+            });
 
-    chart.xAxis
-       .showMaxMin(false)
-         .tickFormat(function(d) { return d3.time.format('%x')(new Date(d)) });
+</script>
 
-    chart.yAxis
-        .tickFormat(d3.format(',.d'));
+<script type="text/javascript">
+    // plotting function.
+    function plotCalls(data) {
+        var format = d3.time.format("%Y-%m-%d");
+        nv.addGraph(function () {
+            var chart = nv.models.stackedAreaChart()
+                            .x(function (d) {
+                                return format.parse(d[0])
+                            })
+                            .y(function (d) {
+                                return d[1]
+                            })
+                            .clipEdge(true)
+                            .useInteractiveGuideline(true)
+                    ;
 
-    d3.select(d3select)
-      .datum(data)
-        .transition().duration(500).call(chart);
+            chart.xAxis
+                    .showMaxMin(false)
+                    .tickFormat(function (d) {
+                        return d3.time.format('%x')(new Date(d))
+                    });
 
-    nv.utils.windowResize(chart.update);
+            chart.yAxis
+                    .tickFormat(d3.format(',.d'));
 
-    return chart;
-  });
-}
+            d3.select('#regChart svg')
+                    .datum(data)
+                    .transition().duration(500).call(chart);
 
-function plotPie(data, d3select) {
-  nv.addGraph(function(){
-    var chart = nv.models.pieChart()
-      .x(function(d) {return d.key})
-      .y(function(d) {
-        var count = 0;
-        var values = d.values;
-        for(var i = 0; i < values.length; i++){
-          count += values[i][1];
-        }
-        return count;
-      })
-      .showLabels(true)
-      .labelType('percent')
-      .labelThreshold(0.05)
-      .donut(true)
-      .donutRatio(0.3);
- 
-    chart
-        .valueFormat(d3.format(',.d'));
+            nv.utils.windowResize(chart.update);
 
-    d3.select(d3select)
-      .datum(data)
-      .transition().duration(500)
-      .call(chart);
-
-    return chart;
-  });
-}
-
-function parseCalls(json){
-    var days = json.days;
-    var count = [];
-    for(var i =0; i < days.length; i ++) {
-      count.push(
-          [days[i].date, days[i].calls]
-      );
+            return chart;
+        });
     }
 
-    var data = [
-        {
-            key: "Calls",
-            values: count
-        }
-    ];
-    return data;
-}
+    function plotPie(data, d3select) {
+        nv.addGraph(function () {
+            var chart = nv.models.pieChart()
+                    .x(function (d) {
+                        return d.key
+                    })
+                    .y(function (d) {
+                        var count = 0;
+                        var values = d.values;
+                        for (var i = 0; i < values.length; i++) {
+                            count += values[i][1];
+                        }
+                        return count;
+                    })
+                    .showLabels(true)
+                    .labelType('percent')
+                    .labelThreshold(0.05)
+                    .donut(true)
+                    .donutRatio(0.3);
 
+            chart
+                    .valueFormat(d3.format(',.d'));
 
-// Here's a more flexible version, which allows you to create 
-// reusable sort functions, and sort by any field
-// http://stackoverflow.com/a/979325/1940070
-var sort_by = function(field, reverse, primer){
+            d3.select(d3select)
+                    .datum(data)
+                    .transition().duration(500)
+                    .call(chart);
 
-   var key = primer ? 
-       function(x) {return primer(x[field])} : 
-       function(x) {return x[field]};
-
-   reverse = [-1, 1][+!!reverse];
-
-   return function (a, b) {
-       return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-     } 
-
-}
-
-function parseVersionCalls(json){
-  // initialize the data object
-  data = [];
-
-  // loop through to get the versions
-  var days = json.days;
-  var versionNumbers = [];
-  var emptyData = [];
-  for(var i = 0; i < days.length; i++) {
-    var dversions = days[i].versions;
-    for(var j = 0; j < dversions.length; j++) {
-      var index = $.inArray(dversions[j].number, versionNumbers)
-      if (index < 0) {
-        versionNumbers.push(dversions[j].number);
-        var newData = {key: dversions[j].number, values: emptyData.slice(0)}
-        data.push(newData);
-        // set index to the array length -1, now that we have appended.
-        index = versionNumbers.length -1;
-      }
-      data[index].values.push([days[i].date, dversions[j].calls]);
+            return chart;
+        });
     }
-    // append to the empty data.
-    emptyData.push([days[i].date, 0]);
-  }
-  // sort the data by version number
 
-  // sort version number, highest to lowest.
-  data.sort(sort_by('key', false, function(a){return a.toUpperCase()}));
-
-  return data;
-}
-
-function parseMethodCalls(json) {
-  // initialize the data object
-  data = [];
-
-  // loop through to get the versions
-  var days = json.days;
-  var methodNames = [];
-  var emptyData = [];
-  for(var i = 0; i < days.length; i++) {
-    var dversions = days[i].versions;
-    for(var j = 0; j < dversions.length; j++) {
-      var dmethods = dversions[j].methods;
-      var indexesModified = [];
-      for(var k = 0; k < dmethods.length; k++){
-        var index = $.inArray(dmethods[k].name, methodNames);
-        if (index < 0) {
-          methodNames.push(dmethods[k].name);
-          var newData = {key: dmethods[k].name, values: emptyData.slice(0)}
-          data.push(newData);
-          // set index to the array length -1, now that we have appended.
-          index = methodNames.length - 1;
+    function parseCalls(json) {
+        var days = json.days;
+        var count = [];
+        for (var i = 0; i < days.length; i++) {
+            count.push(
+                    [days[i].date, days[i].calls]
+            );
         }
-        // if we've already added this date, add to the calls number.
-        var values = data[index].values
-        if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() == new String(days[i].date).valueOf()){
-          values[values.length - 1][1] += dmethods[k].calls;
-        } else {
-          values.push([days[i].date, dmethods[k].calls]);
-        }
-      }
-      // go through all the methods that weren't called on this day and add 0.
-      for(var m = 0; m < data.length; m++) {
-        var values = data[m].values;
-        if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() != new String(days[i].date).valueOf()){
-          values.push([days[i].date, 0]);
-        }
-      }
+
+        var data = [
+            {
+                key: "Calls",
+                values: count
+            }
+        ];
+        return data;
     }
-    // append to the empty data.
-    emptyData.push([days[i].date, 0]);
-  }
-  // sort by method name.
-  data.sort(sort_by('key', true, function(a){return a.toUpperCase()}));
 
-  return data;
-}
 
-$.getJSON("data/usage_2014-04-11_2014-05-11.json", function(jsonRet) {
-  json = jsonRet;
-  $('#totalButton').trigger('click');
-});
-    </script>
-  </body>
+    // Here's a more flexible version, which allows you to create
+    // reusable sort functions, and sort by any field
+    // http://stackoverflow.com/a/979325/1940070
+    var sort_by = function (field, reverse, primer) {
+
+        var key = primer ?
+                function (x) {
+                    return primer(x[field])
+                } :
+                function (x) {
+                    return x[field]
+                };
+
+        reverse = [-1, 1][+!!reverse];
+
+        return function (a, b) {
+            return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+        }
+
+    }
+
+    function parseVersionCalls(json) {
+        // initialize the data object
+        data = [];
+
+        // loop through to get the versions
+        var days = json.days;
+        var versionNumbers = [];
+        var emptyData = [];
+        for (var i = 0; i < days.length; i++) {
+            var dversions = days[i].versions;
+            for (var j = 0; j < dversions.length; j++) {
+                var index = $.inArray(dversions[j].number, versionNumbers)
+                if (index < 0) {
+                    versionNumbers.push(dversions[j].number);
+                    var newData = {key: dversions[j].number, values: emptyData.slice(0)}
+                    data.push(newData);
+                    // set index to the array length -1, now that we have appended.
+                    index = versionNumbers.length - 1;
+                }
+                data[index].values.push([days[i].date, dversions[j].calls]);
+            }
+            // append to the empty data.
+            emptyData.push([days[i].date, 0]);
+        }
+        // sort the data by version number
+
+        // sort version number, highest to lowest.
+        data.sort(sort_by('key', false, function (a) {
+            return a.toUpperCase()
+        }));
+
+        return data;
+    }
+
+    function parseMethodCalls(json) {
+        // initialize the data object
+        data = [];
+
+        // loop through to get the versions
+        var days = json.days;
+        var methodNames = [];
+        var emptyData = [];
+        for (var i = 0; i < days.length; i++) {
+            var dversions = days[i].versions;
+            for (var j = 0; j < dversions.length; j++) {
+                var dmethods = dversions[j].methods;
+                var indexesModified = [];
+                for (var k = 0; k < dmethods.length; k++) {
+                    var index = $.inArray(dmethods[k].name, methodNames);
+                    if (index < 0) {
+                        methodNames.push(dmethods[k].name);
+                        var newData = {key: dmethods[k].name, values: emptyData.slice(0)}
+                        data.push(newData);
+                        // set index to the array length -1, now that we have appended.
+                        index = methodNames.length - 1;
+                    }
+                    // if we've already added this date, add to the calls number.
+                    var values = data[index].values
+                    if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() == new String(days[i].date).valueOf()) {
+                        values[values.length - 1][1] += dmethods[k].calls;
+                    } else {
+                        values.push([days[i].date, dmethods[k].calls]);
+                    }
+                }
+                // go through all the methods that weren't called on this day and add 0.
+                for (var m = 0; m < data.length; m++) {
+                    var values = data[m].values;
+                    if (values.length > 0 && new String(values[values.length - 1][0]).valueOf() != new String(days[i].date).valueOf()) {
+                        values.push([days[i].date, 0]);
+                    }
+                }
+            }
+            // append to the empty data.
+            emptyData.push([days[i].date, 0]);
+        }
+        // sort by method name.
+        data.sort(sort_by('key', true, function (a) {
+            return a.toUpperCase()
+        }));
+
+
+        return data;
+    }
+
+    // plot an empty chart
+    plotCalls([{key: "data", values: []}]);
+
+//    $.getJSON("data/usage_2014-04-11_2014-05-11.json", function (jsonRet) {
+//        json = jsonRet;
+//        $('#totalButton').trigger('click');
+//    });
+
+</script>
+</body>
 </html>
