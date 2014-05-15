@@ -73,13 +73,24 @@
     </div>
 </div>
 
+<div class="row panel">
+    <div class="large-4 columns">
+        <h4>Upload a file</h4>
+    </div>
+    <div class="large-8 columns">
+        <input type="file" id="filechooser" name="file">
+    </div>
+</div>
+
 <form>
     <div class="row">
-        <div class="small-12 columns">
-            <label>JSON
-                <textarea placeholder="Paste JSON here." style="min-height:200px"></textarea>
-            </label>
-        </div>
+        <form>
+            <div class="large-12 columns">
+                <label>JSON
+                    <textarea id="jsonarea" placeholder="Paste JSON here." style="min-height:200px"></textarea>
+                </label>
+            </div>
+        </form>
     </div>
 </form>
 
@@ -152,16 +163,46 @@
                 var url = 'https://developer.cumtd.com/api/v2.2/json/GetApiUsage?callback=?&' + $(this).serialize();
                 $.getJSON(url, function (data) {
                     //data is the JSON string
-                    if(data.status.code != 200){
+                    if (data.status.code != 200) {
                         console.error(data);
                     } else {
                         console.log(data);
                         mtd_json = data;
-                        var data = parseCalls(mtd_json);
-                        plotCalls(data);
+                        var parsed = parseCalls(mtd_json);
+                        plotCalls(parsed);
+                        // set the form data
+                        $('#jsonarea').val(JSON.stringify(mtd_json));
                     }
                 });
             });
+
+    // callback for uploading a file
+    function handleFileSelect(ev) {
+        reader = new FileReader();
+
+        reader.onload = function (e) {
+            var text = reader.result;
+
+            // set the json text box
+            $('#jsonarea').val(text);
+
+            // parse json object
+            try {
+                var obj = JSON.parse(text);
+
+                mtd_json = obj;
+
+                var data = parseCalls(obj);
+                plotCalls(data);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        reader.readAsText(ev.target.files[0]);
+    }
+
+    $('#filechooser').on('change', handleFileSelect);
 
 </script>
 
@@ -241,13 +282,12 @@
             );
         }
 
-        var data = [
+        return [
             {
                 key: "Calls",
                 values: count
             }
         ];
-        return data;
     }
 
 
@@ -357,12 +397,14 @@
     }
 
     // plot an empty chart
-    plotCalls([{key: "data", values: []}]);
+    plotCalls([
+        {key: "data", values: []}
+    ]);
 
-//    $.getJSON("data/usage_2014-04-11_2014-05-11.json", function (jsonRet) {
-//        json = jsonRet;
-//        $('#totalButton').trigger('click');
-//    });
+    //    $.getJSON("data/usage_2014-04-11_2014-05-11.json", function (jsonRet) {
+    //        json = jsonRet;
+    //        $('#totalButton').trigger('click');
+    //    });
 
 </script>
 </body>
