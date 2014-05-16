@@ -20,99 +20,118 @@
 
 
 <body>
-<div class="row panel">
+<div class="row">
+    <div class="large-12 columns">
+        <dl class="tabs" data-tab>
+            <dd class="active"><a href="#panelApi">Use API</a></dd>
+            <dd><a href="#panelFile">Read file</a></dd>
+            <dd><a href="#panelText">Paste text</a></dd>
+            <dd><a href="#panelSampleData">Sample data</a></dd>
+        </dl>
+        <div class="tabs-content panel" id="tabsContent">
+            <div class="content active" id="panelApi">
+                <div class="row">
 
-    <div class="large-4 columns">
-        <h3>Use MTD Api</h3>
-        <a href="https://developer.cumtd.com/documentation/v2.2/method/GetApiUsage" target="_blank">documentation</a>
+                    <div class="large-4 columns">
+                        <h3>Use MTD Api</h3>
+                        <a href="https://developer.cumtd.com/documentation/v2.2/method/GetApiUsage" target="_blank">documentation</a>
 
-        <p>
-            <small>Note: This will count towards your mtd api usage.</small>
-        </p>
-    </div>
-    <div class="large-8 columns">
-        <form id="apiform" data-abide action="javascript:void(0);">
-            <div class="row">
-                <div class="large-12 columns">
-                    <label>API Key
-                        <small>required</small>
-                        <input type="text" value="" name="key" placeholder="a12b34c5678901b2def3ghi4j56k7l8m" required>
-                    </label>
-                    <small class="error">A valid CUMTD API key is required. (<a
-                            href="https://developer.cumtd.com/documentation/v2.2/Requests" target="_blank">info</a>)
-                    </small>
+                        <p>
+                            <small>Note: This will count towards your mtd api usage.</small>
+                        </p>
+                    </div>
+                    <div class="large-8 columns">
+                        <form id="apiform" data-abide action="javascript:void(0);">
+                            <div class="row">
+                                <div class="large-12 columns">
+                                    <label>API Key
+                                        <small>required</small>
+                                        <input type="text" value="" name="key"
+                                               placeholder="a12b34c5678901b2def3ghi4j56k7l8m" required>
+                                    </label>
+                                    <small class="error">A valid CUMTD API key is required. (<a
+                                            href="https://developer.cumtd.com/documentation/v2.2/Requests"
+                                            target="_blank">info</a>)
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="large-6 columns">
+                                    <label>Method
+                                        <input type="text" value="" name="method" placeholder="GetDeparturesByStop">
+                                    </label>
+                                </div>
+                                <div class="large-6 columns">
+                                    <label>Version
+                                        <input type="text" value="" name="version" placeholder="2.2">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="large-6 columns">
+                                    <label>Start Date
+                                        <input type="text" name="start_date" placeholder="2014-05-04" id="startDate">
+                                    </label>
+                                </div>
+                                <div class="large-6 columns">
+                                    <label>End Date
+                                        <input type="text" name="end_date" placeholder="2014-05-05" id="endDate">
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div class="row">
+                                <div class="large-12 columns">
+                                    <button type="submit">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="large-6 columns">
-                    <label>Method
-                        <input type="text" value="" name="method" placeholder="GetDeparturesByStop">
-                    </label>
-                </div>
-                <div class="large-6 columns">
-                    <label>Version
-                        <input type="text" value="" name="version" placeholder="2.2">
-                    </label>
+            <div class="content" id="panelFile">
+                <div class="row">
+                    <div class="large-4 columns">
+                        <h4>Upload a file</h4>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" id="filechooser" name="file">
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="large-6 columns">
-                    <label>Start Date
-                        <input type="text" name="start_date" placeholder="2014-05-04" id="startDate">
-                    </label>
-                </div>
-                <div class="large-6 columns">
-                    <label>End Date
-                        <input type="text" name="end_date" placeholder="2014-05-05" id="endDate">
-                    </label>
-                </div>
-
+            <div class="content" id="panelText">
+                <form id="jsonTextForm" data-abide action="javascript:void(0);">
+                    <div class="row">
+                        <div class="large-12 columns">
+                            <div class="large-12 columns">
+                                <label>JSON
+                                    <textarea id="jsonArea" placeholder="Paste JSON here." style="min-height:200px"
+                                              data-abide-validator="jsonValidator"></textarea>
+                                </label>
+                                <small class="error">Unable to parse JSON.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-2 large-offset-10 columns">
+                            <button type="submit">Submit</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="row">
-                <div class="large-12 columns">
-                    <button type="submit">Submit</button>
+            <div class="content" id="panelSampleData">
+                <div class="row">
+                    <div class="large-4 columns">
+                        <h4>Show sample data</h4>
+                    </div>
+                    <div class="large-8 columns">
+                        <button id="sampleDataButton">Show</button>
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="row panel">
-    <div class="large-4 columns">
-        <h4>Upload a file</h4>
-    </div>
-    <div class="large-8 columns">
-        <input type="file" id="filechooser" name="file">
-    </div>
-</div>
-
-<div class="row panel">
-    <div class="large-4 columns">
-        <h4>Show sample data</h4>
-    </div>
-    <div class="large-8 columns">
-        <button id="sampleDataButton">Show</button>
-    </div>
-</div>
-
-<form id="jsonTextForm" data-abide action="javascript:void(0);">
-    <div class="row">
-        <div class="large-12 columns">
-            <div class="large-12 columns">
-                <label>JSON
-                    <textarea id="jsonArea" placeholder="Paste JSON here." style="min-height:200px"
-                              data-abide-validator="jsonValidator"></textarea>
-                </label>
-                <small class="error">Unable to parse JSON.</small>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="large-2 large-offset-10 columns">
-            <button type="submit">Submit</button>
-        </div>
-    </div>
-</form>
+</div>
 
 <div class="row">
     <div class="large-12 columns">
@@ -252,7 +271,7 @@
                 // need callback=?. JSONP
                 var text = $('#jsonArea').val();
 
-                try{
+                try {
                     var obj = JSON.parse(text);
 
                     mtd_json = obj;
@@ -263,7 +282,6 @@
                     console.error(e);
                 }
             });
-
 
 </script>
 
