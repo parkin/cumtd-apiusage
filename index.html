@@ -25,6 +25,10 @@
     <div class="large-4 columns">
         <h3>Use MTD Api</h3>
         <a href="https://developer.cumtd.com/documentation/v2.2/method/GetApiUsage" target="_blank">documentation</a>
+
+        <p>
+            <small>Note: This will count towards your mtd api usage.</small>
+        </p>
     </div>
     <div class="large-8 columns">
         <form id="apiform" data-abide action="javascript:void(0);">
@@ -91,25 +95,24 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="large-12 columns">
-        <form>
-            <label>JSON
-                <textarea id="jsonarea" placeholder="Paste JSON here." style="min-height:200px"></textarea>
-            </label>
-        </form>
+<form id="jsonTextForm" data-abide action="javascript:void(0);">
+    <div class="row">
+        <div class="large-12 columns">
+            <div class="large-12 columns">
+                <label>JSON
+                    <textarea id="jsonArea" placeholder="Paste JSON here." style="min-height:200px"
+                              data-abide-validator="jsonValidator"></textarea>
+                </label>
+                <small class="error">Unable to parse JSON.</small>
+            </div>
+        </div>
     </div>
-</div>
-
-<div class="row">
-    <div class="small-12 columns">
-        <ul class="button-group">
-            <li>
-                <button id="submit" class="button">Submit</button>
-            </li>
-        </ul>
+    <div class="row">
+        <div class="large-2 large-offset-10 columns">
+            <button type="submit">Submit</button>
+        </div>
     </div>
-</div>
+</form>
 
 <div class="row">
     <div class="large-12 columns">
@@ -138,11 +141,26 @@
 
 <script src="foundation/js/vendor/jquery.js"></script>
 <script src="foundation/js/foundation.min.js"></script>
+<!--<script src="foundation/js/foundation/foundation.abide.js"></script>-->
 <script>
     mtd_json = []
 
     // initialize document stuff
-    $(document).foundation();
+    $(document).foundation(
+            {abide: {
+                validators: {
+                    jsonValidator: function (el, required, parent) {
+                        try {
+                            JSON.parse(el.value);
+                            return true;
+                        } catch (e) {
+
+                        }
+                        return false;
+                    }
+                }
+            }}
+    );
 
     $(document).on('click', '#totalButton', function () {
         var totalCalls = parseCalls(mtd_json);
@@ -178,7 +196,7 @@
                         var parsed = parseCalls(mtd_json);
                         plotCalls(parsed);
                         // set the form data
-                        $('#jsonarea').val(JSON.stringify(mtd_json));
+                        $('#jsonArea').val(JSON.stringify(mtd_json));
                     }
                 });
             });
@@ -191,7 +209,7 @@
             var text = reader.result;
 
             // set the json text box
-            $('#jsonarea').val(text);
+            $('#jsonArea').val(text);
 
             // parse json object
             try {
@@ -219,9 +237,33 @@
             var data = parseCalls(jsonRet);
             plotCalls(data);
 
-            $('#jsonarea').val(JSON.stringify(jsonRet));
+            $('#jsonArea').val(JSON.stringify(jsonRet));
         });
-    })
+    });
+
+
+    $('#jsonTextForm')
+            .on('invalid', function () {
+                var invalid_fields = $(this).find('[data-invalid]');
+                console.log(invalid_fields);
+            })
+            .on('valid',function (d) {
+            }).on('submit', function (event) {
+                // need callback=?. JSONP
+                var text = $('#jsonArea').val();
+
+                try{
+                    var obj = JSON.parse(text);
+
+                    mtd_json = obj;
+
+                    var data = parseCalls(obj);
+                    plotCalls(data);
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+
 
 </script>
 
