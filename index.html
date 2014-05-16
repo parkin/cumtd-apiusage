@@ -18,7 +18,6 @@
     <script src="static/foundation-datepicker.js"></script>
 </head>
 
-
 <body>
 <div class="row">
     <div class="large-12 columns">
@@ -150,19 +149,18 @@
 </div>
 
 <div class="row fullWidth">
-    <div class="small-8 columns" id="regChart">
+    <div class="large-8 columns" id="regChart">
         <svg style='min-height:300px'/>
     </div>
-    <div class="small-4 columns" id="pieChart">
+    <div class="large-4 columns" id="pieChart">
         <svg style='min-height:300px'/>
     </div>
 </div>
 
 <script src="foundation/js/vendor/jquery.js"></script>
 <script src="foundation/js/foundation.min.js"></script>
-<!--<script src="foundation/js/foundation/foundation.abide.js"></script>-->
 <script>
-    mtd_json = []
+    mtd_json = [];
 
     // initialize document stuff
     $(document).foundation(
@@ -173,7 +171,7 @@
                             JSON.parse(el.value);
                             return true;
                         } catch (e) {
-
+                            console.error(e);
                         }
                         return false;
                     }
